@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Deploy Metrics</title>
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/date_input.css" type="text/css">
+  <style type="text/css">
+    body {
+      padding: 32px;
+      padding-top: 50px;
+    }
+  </style>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="js/bootstrap-dropdown.js" type="text/javascript"></script>
+  <script src="js/json2.js" type="text/javascript"></script>
+  <script src="js/jquery.jeditable.js" type="text/javascript"></script>
+</head>
+<body>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <ul class="nav">
+          <li class="active"><a href="#">Reporting</a></li>
+          <li><a href="#">Readme</a></li>
+        </ul>
+        <ul class="nav pull-right">
+          <li id="fat-menu" class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Add Deploy Event <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li style="padding:3px;">
+                <form action="/newentry" method="POST" id="newEntryForm">
+                  Platform: <input type="text" name="platform_name" class="span2"><br />
+                  Release: <input type="text" name="release_name" class="span2"><br />
+                  Event Name: <input type="text" name="event_name" class="span2"><br />
+                  Comment: <textarea name="comment"></textarea><br />
+                  <button class="btn" type="submit">Submit</button> 
+                </form>
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+  <div class="container">  
+    <h2>Deployment Pipeline Metrics</h2>
+    <p class="lead">Know your (deployment) shit...</p>
+    <br /><br /><br />
+    <div class="row">
+      <div class="span12">
+        <div class="row">
+          <div class="span6">
+            <form class="well form-inline">
+              <legend>Reporting parameters</legend>
+              Match on <input type="text" class="input-larger" id="input01" name="input01" placeholder="type something…">
+              <br /><br />
+              Within the date range of <input type="text" class="input-small" id="date01" name="date01">
+               to <input type="text" class="input-small" id="date02" name="date02">
+            </form>
+          </div>
+          <div class="span6">
+            <legend>Scorecard...</legend>
+            <p>Count of records evaluated<span id="recordCount"></span></p>
+            <p>Total cycle time: 4.5 days</p>
+            <p>Estimated overhead: 25.7%</p>
+            
+          </div>
+        </div>
+        <br /><br />
+        <table id="deploy_list" class="table table-condensed">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Release</th>
+              <th>Deploy Event</th>
+              <th>Comments</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+      $('input[name=input01]').focus().keyup(function() {
+          $('#deploy_list tr:not(:contains("' + $(this).val() + '"))').hide();
+          $('#deploy_list tr:contains("' + $(this).val() + '")').show();
+          $('#deploy_list tr:eq(0)').show(); // a little hacky.  Would want this filter 2 lines above.
+
+
+      });
+      $('#date01').datepicker();
+      $('#date02').datepicker();
+      $('.dropdown-toggle').dropdown();
+
+      // stop newEntry dropdown from closing when user clicks on form
+      //$("#newEntryForm").click(function(event){
+      //  event.stopPropagation();
+      //});
+
+      function rowBuilder(deventObj) {
+        return '<tr>'
+          + '<td class="edit">' + deventObj.platform_name + '</td>'
+          + '<td>' + deventObj.release_name + '</td>'
+          + '<td>' + deventObj.event_name + '</td>'
+          + '<td>' + deventObj.comment + '</td>'
+          + '<td>' + deventObj.timestamp + '</td>'
+          + '</tr>';
+      }
+      
+        $.getJSON('api/deploys', function(data) {
+          //$.each(data.deploy_events, function(i, d_eventObj){
+          $.each(data, function(i, d_eventObj){
+            $("#deploy_list > tbody").append(rowBuilder(d_eventObj));
+          });
+
+          //$('.edit').editable('/api/deployEvents/id');
+
+
+        });
+
+
+      
+
+  });
+</script>
+
+  </body>
+</html>
