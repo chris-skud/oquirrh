@@ -15,6 +15,11 @@ app.configure(function() {
   // disable layout
 });
 
+app.get('/readme', function(req,res) {
+  // at some point may want to pass initial data down with template vs. ajax call
+  res.sendfile('public/readme.html');
+});
+
 app.get('/', function(req,res) {
   // at some point may want to pass initial data down with template vs. ajax call
   res.sendfile('public/index.html');
@@ -22,9 +27,7 @@ app.get('/', function(req,res) {
 
 /* prolly need filter params on this one */
 app.get('/api/deploys', function (req, res) {
-
-  deploymodel.alldeploys(function(err, deploys)
-  {
+  deploymodel.alldeploys(function(err, deploys) {
     if(err) {
       console.log('error ' + err);
       throw err;
@@ -35,12 +38,26 @@ app.get('/api/deploys', function (req, res) {
   });
 });
 
-app.get('/api/deploys/{id}', function (req, res) {
-  res.json(deploymodel.getbyid(id));
+
+
+app.post('/api/deploys', function (req, res) {
+  console.log(req.body.release_name);
+  deploymodel.add(req.body, function(err, newid)
+  {
+    if(err) {
+      console.log('error ' + err);
+      throw err;
+    }
+    else {
+      res.json(newid);
+    }
+  });
+
 });
 
-app.post('/api/deploys/', function (req, res) {
-  //res.json(deploymodel.add(req.postdata.deploym); // will return.. an id?
+app.get('/api/deploys/:id', function (req, res) {
+  deploymodel.getbyid()
+  res.json(deploymodel.getbyid(id));
 });
 
 app.post('/api/meaninterval', function (req, res) { 
