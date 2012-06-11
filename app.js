@@ -15,19 +15,24 @@ app.configure(function() {
   // disable layout
 });
 
+/* get readme.html static file */
 app.get('/readme', function(req,res) {
+  console.log('Readme requested');
   // at some point may want to pass initial data down with template vs. ajax call
   res.sendfile('public/readme.html');
 });
 
+/* get index.html static file */
 app.get('/', function(req,res) {
+  console.log('Index html requested');
   // at some point may want to pass initial data down with template vs. ajax call
   res.sendfile('public/index.html');
 });
 
-/* prolly need filter params on this one */
+/* get all deploy records */
 app.get('/api/deploys', function (req, res) {
-  deploymodel.alldeploys(function(err, deploys) {
+  console.log('Get all deploys operation requested');
+  deploymodel.getAll(function(err, deploys) {
     if(err) {
       console.log('error ' + err);
       throw err;
@@ -38,10 +43,24 @@ app.get('/api/deploys', function (req, res) {
   });
 });
 
+/* Edit deploy record.  express put was not working... */
+app.put('/api/deploys/:id', function (req, res) {
+  console.log('Edit deploy operation requested with data: id = ' + req.params.id + 'body = ' + JSON.stringify(req.body));
+  deploymodel.editById(req.params.id, req.body, function(err, deploy)
+  {
+    if(err) {
+      console.log('error ' + err);
+      throw err;
+    }
+    else {
+      res.json(deploy);
+    }
+  });
+});
 
-
+/* Create new deploy record */
 app.post('/api/deploys', function (req, res) {
-  console.log(req.body.release_name);
+  console.log('Create deploy operation requested with data = ' + JSON.stringify(req.body));
   deploymodel.add(req.body, function(err, newid)
   {
     if(err) {
@@ -52,12 +71,47 @@ app.post('/api/deploys', function (req, res) {
       res.json(newid);
     }
   });
-
 });
 
+
+/* Get by id */
 app.get('/api/deploys/:id', function (req, res) {
-  deploymodel.getbyid()
-  res.json(deploymodel.getbyid(id));
+  console.log('Get operation requested on id: ' + req.params.id);
+  deploymodel.getById(req.params.id, function(err, deploy) {
+    if(err) {
+      console.log('error ' + err);
+      throw err;
+    }
+    else {
+      if (deploy === null) {
+        res.send('', 404)
+      }
+      else {
+        res.json(deploy);
+      }
+    }
+  });
+});
+
+
+
+/* delete by id */
+app.delete('/api/deploys/:id', function (req, res) {
+  console.log('Delete operation requested on id: ' + req.params.id);
+  deploymodel.deleteById(req.params.id, function(err, deploy) {
+    if(err) {
+      console.log('error ' + err);
+      throw err;
+    }
+    else {
+      if (deploy === null) {
+        res.send('', 404)
+      }
+      else {
+        res.json(deploy);
+      }
+    }
+  });
 });
 
 app.post('/api/meaninterval', function (req, res) { 
